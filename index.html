@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تقرير الصيانة اليومي ورشة الهفوف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* الفكرة: شريط علوي ثابت للتاريخ والتبويبات، ثم الملخص قبل التفاصيل، وألوان الحالة ثابتة في كل الصفحة */
+:root{
+  --bg:#f2f5f7; --surface:#ffffff; --ink:#15212b; --muted:#5b6a77; --line:#dbe2e8;
+  --accent:#0b5c7a; --accent-soft:#e2eff4;
+  --insp:#6f8399; --prog:#1c8a6f; --wait:#cf4630; --warn:#b97c0d;
+  --display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e151b; --surface:#17212a; --ink:#e7edf2; --muted:#9babb8; --line:#2a3844;
+    --accent:#5fbddb; --accent-soft:#143341;
+    --insp:#93a7bc; --prog:#43bd9c; --wait:#f1745e; --warn:#e4ad42;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e151b; --surface:#17212a; --ink:#e7edf2; --muted:#9babb8; --line:#2a3844;
+  --accent:#5fbddb; --accent-soft:#143341;
+  --insp:#93a7bc; --prog:#43bd9c; --wait:#f1745e; --warn:#e4ad42;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.head-row{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:14px 0 10px}
+h1{font-family:var(--display);font-size:24px;margin:0;line-height:1.3;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px}
+.titleblock{border-inline-start:5px solid var(--accent);padding-inline-start:14px;display:flex;flex-direction:column;gap:2px}
+.titleblock h1{font-size:30px;color:var(--accent);letter-spacing:0}
+.titleblock .sub{font-size:14px}
+.credits{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.cred{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:8px;padding:4px 12px}
+.cred small{font-size:12px;color:var(--muted)}
+.cred b{font-size:15px;font-weight:700;color:var(--ink)}
+.daybox{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.daybox label{font-size:13px;color:var(--muted)}
+select,input[type=search]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-height:36px}
+select:focus-visible,input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:0}
+nav.tabs a{flex:none;padding:8px 14px;color:var(--muted);text-decoration:none;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs a:hover{color:var(--ink)}
+nav.tabs a[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+nav.tabs .cnt{font-size:12px;color:var(--muted);margin-inline-start:4px}
+main{padding:20px 0 48px;display:flex;flex-direction:column;gap:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;border-inline-start:5px solid var(--k,var(--accent));display:flex;flex-direction:column;gap:2px}
+.kpi .lab{font-size:13px;color:var(--muted)}
+.kpi .val{font-size:34px;font-weight:700;line-height:1.15}
+#hr-sum .kpis{grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}
+.kpi .val.sm{font-size:20px;line-height:1.7}
+.kpi .dl{font-size:12.5px;color:var(--muted)}
+.dl.up{color:var(--wait);font-weight:600}.dl.down{color:var(--prog);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:18px}
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+h2{font-size:17px;margin:0 0 4px;font-weight:700;text-wrap:balance}
+.note{color:var(--muted);font-size:13px;margin:0 0 12px}
+.change{border-inline-start:5px solid var(--accent);background:var(--accent-soft)}
+.change ul{margin:6px 0 0;padding-inline-start:20px}
+.change li{margin:2px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:middle}
+.bars{display:flex;flex-direction:column;gap:7px}
+.brow{display:grid;grid-template-columns:92px 1fr 34px;gap:10px;align-items:center;font-size:14px}
+.brow .tot{font-weight:700;text-align:start}
+.track{display:flex;height:22px;gap:2px}
+.seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;border-radius:3px;min-width:0;overflow:hidden}
+.s-insp{background:var(--insp)}.s-prog{background:var(--prog)}.s-wait{background:var(--wait)}.s-acc{background:var(--accent)}
+:root[data-theme="dark"] .seg{color:#0e151b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg{color:#0e151b}}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-weight:600;color:var(--muted);font-size:12.5px;text-align:start;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.en{direction:ltr;text-align:right;font-size:13px}
+td.r,th.r{text-align:left;white-space:nowrap}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12.5px;font-weight:600;white-space:nowrap;border:1px solid currentColor}
+.p-insp{color:var(--insp)}.p-prog{color:var(--prog)}.p-wait{color:var(--wait)}.p-warn{color:var(--warn)}
+.old{color:var(--wait);font-weight:700}
+.meter{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--prog)}
+.big{font-size:26px;font-weight:700}
+ol.obs{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px}
+ol.obsfull{margin:0;padding-inline-start:24px;display:flex;flex-direction:column;gap:12px}
+ol.obsfull>li::marker{font-weight:700;color:var(--accent)}
+.supbox{margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
+.donegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px;align-items:start}
+.dbtn{font:inherit;color:inherit;background:none;border:1px solid transparent;border-radius:6px;padding:2px 4px;cursor:pointer;text-align:start;width:100%}
+.dbtn:hover{background:var(--bg)}
+.dbtn[aria-pressed="true"]{border-color:var(--prog);background:color-mix(in srgb,var(--prog) 10%,var(--surface));font-weight:700}
+.dbtn .track{display:flex}
+table.hist thead tr:first-child th{border-bottom:0;padding-bottom:0;vertical-align:bottom}
+.trend{display:inline-flex;flex-direction:column;align-items:flex-end;gap:1px;font-size:12px;font-weight:600}
+.trend svg{display:block}
+.trend polyline{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.trend circle{fill:currentColor}
+.trend.good{color:var(--prog)}.trend.bad{color:var(--wait)}.trend.flat{color:var(--muted)}
+.since{font-size:11px;font-weight:500}.since.good{color:var(--prog)}.since.bad{color:var(--wait)}
+.aging{display:flex;height:26px;gap:2px;margin:10px 0 6px}
+.aging div{border-radius:3px;min-width:2px}
+.a0{background:color-mix(in srgb,var(--wait) 14%,var(--surface))}.a1{background:color-mix(in srgb,var(--wait) 28%,var(--surface))}
+.a2{background:color-mix(in srgb,var(--wait) 42%,var(--surface))}.a3{background:color-mix(in srgb,var(--wait) 58%,var(--surface))}
+.a4{background:color-mix(in srgb,var(--wait) 78%,var(--surface))}.a5{background:var(--wait)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.tools input[type=search]{flex:1 1 220px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:4px 12px;cursor:pointer;min-height:34px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.more{font-size:13px;color:var(--accent);font-weight:600}
+.empty{color:var(--muted);padding:12px 0}
+@media (max-width:480px){h1,.titleblock h1{font-size:22px}.kpi .val{font-size:28px}.brow{grid-template-columns:78px 1fr 28px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="head-row">
+      <div class="titleblock">
+        <h1>تقرير الصيانة اليومي</h1>
+        <div class="sub">ورشة الهفوف، قسم الحركة والمعدات</div>
+        <div class="credits"><span class="cred"><small>مصدر البيانات</small><b>أ/ عثمان النور</b></span><span class="cred"><small>إعداد التقرير</small><b>حازم حسن</b></span></div>
+      </div>
+      <div class="daybox">
+        <label for="day">تاريخ التقرير</label>
+        <select id="day"></select>
+        <span class="sub" id="cmp"></span>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="أقسام التقرير"></nav>
+  </div>
+</header>
+<div class="wrap"><main id="main"></main></div>
+
+<script type="application/json" id="data">{"days":{"2026-11-16":{"breakdowns":[{"code":"1042","type":"قلاب","trouble":"PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1043","type":"قلاب","trouble":"PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1044","type":"قلاب","trouble":"GEAR PROBLEM & PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1046","type":"قلاب","trouble":"AC REPAIR , ELECTRICAL REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1050","type":"قلاب","trouble":"GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1053","type":"قلاب","trouble":"GEAR PROBLEM & PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1054","type":"قلاب","trouble":"GEAR PROBLEM & BRAKE SYSTEM REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1055","type":"قلاب","trouble":"OVERHAUL CLUTCH AND STEERING REPAIR KIT","req":"","reqDate":null,"status":"prog"},{"code":"1058","type":"قلاب","trouble":"PASSING & ELECTRICAL SYSTEM REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1059","type":"قلاب","trouble":"GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1060","type":"قلاب","trouble":"GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1062","type":"قلاب","trouble":"HYDROLIC JACK PISTON & GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1063","type":"قلاب","trouble":"OVERHAUL CLUTCH","req":"","reqDate":null,"status":"insp"},{"code":"1069","type":"قلاب","trouble":"ACCIDENT REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1070","type":"قلاب","trouble":"GEAR LEVER & DAINTING REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1082","type":"قلاب","trouble":"GEAR PROBLEM & PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1083","type":"قلاب","trouble":"HYDROLIC JACK PISTON & GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1141","type":"تنكر","trouble":"BRAKE SYSTEM REPAIR AND ELECTRICAL REPAIR , AC REPAIR WAITING FLANGE","req":"","reqDate":null,"status":"prog"},{"code":"1142","type":"تنكر","trouble":"OVERHAUL GEAR BOX AND CLUTCH , ELECTRICAL SYSTEM REPAIR, TANK ISSUE, SILENCER ISSUE","req":"","reqDate":null,"status":"insp"},{"code":"1144","type":"تنكر","trouble":"OVERHAUL GEAR BOX AND ELECTRICAL SYSTEM REPAIR","req":"12243","reqDate":"2026-11-16","status":"wait"},{"code":"1151","type":"تنكر","trouble":"PASSING AND WATING AIR VALVE REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1228","type":"بلدوزر","trouble":"HYDROLIC LEAKAGE PISTON REPAIR & BATTERY","req":"12235","reqDate":"2026-11-16","status":"wait"},{"code":"1231","type":"بلدوزر","trouble":"ELECTRICAL SYSTEM REPAIR & OIL LEAKAGE","req":"","reqDate":null,"status":"insp"},{"code":"1234","type":"بلدوزر","trouble":"HYDROLIC LEAKAGE PISTON REPAIR & BATTERY","req":"12234","reqDate":"2026-11-16","status":"wait"},{"code":"1239","type":"بلدوزر","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1243","type":"بلدوزر","trouble":"TRACK CHAIN ISSUE AND OIL LEAKAGE REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1248","type":"بلدوزر","trouble":"OVERHAUL ENGINE","req":"12012","reqDate":"2026-10-24","status":"wait"},{"code":"1253","type":"بلدوزر","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1314","type":"رصاصة","trouble":"DIRENTIAL PARTS","req":"7667","reqDate":"2026-01-05","status":"wait"},{"code":"1316","type":"رصاصة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1318","type":"رصاصة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1322","type":"رصاصة","trouble":"ELECTRICAL SYSTEM REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1323","type":"رصاصة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1506","type":"جريدر","trouble":"OIL LEAKAGE REPAIR AND CONTROL CHECKUP WAITING FOR BATTERY","req":"11652","reqDate":"2026-09-19","status":"wait"},{"code":"1510","type":"جريدر","trouble":"HYDROLIC PUMP REPAIR","req":"9134","reqDate":"2026-03-26","status":"wait"},{"code":"1513","type":"جريدر","trouble":"HYDROLIC PUMP REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1627","type":"شيول","trouble":"HYDROLIC PUMP, PIOLET PUMP, STEERING PUMP AND SENSOR","req":"","reqDate":null,"status":"prog"},{"code":"1630","type":"شيول","trouble":"PIOLET PUMP AND RADIATOR TANK","req":"10640+12073","reqDate":"2026-07-07","status":"wait"},{"code":"1635","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1638","type":"شيول","trouble":"HYDROLIC PUMP & CONTROL","req":"12194","reqDate":"2026-11-10","status":"wait"},{"code":"1639","type":"شيول","trouble":"HYDROLIC PUMP REPAIR AND FAN PUMP","req":"11825","reqDate":"2026-10-04","status":"wait"},{"code":"1646","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1648","type":"شيول","trouble":"OVERHAUL ENGINE","req":"11914+11915","reqDate":"2026-10-14","status":"wait"},{"code":"1651","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1657","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1673","type":"شيول","trouble":"GEAR PROBLEM CONTROL LEAKAGE REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1674","type":"شيول","trouble":"FUEL SYSTEM REPAIR (NEED NEW INJECTORS)","req":"","reqDate":null,"status":"prog"},{"code":"1676","type":"شيول","trouble":"OIL LEAKAGE REPAIR AND ELECTRICAL REPAIR & BUCKET PIN , BUSHING","req":"","reqDate":null,"status":"prog"},{"code":"1708","type":"بوكلين","trouble":"OVERHEAT ENGINE & ELECTRICAL SYSTEM REPAIR","req":"12236","reqDate":"2026-11-16","status":"wait"},{"code":"1803","type":"فرادة","trouble":"PISTON REPAIR & ELECTRICAL REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1804","type":"فرادة","trouble":"ECM COMPUTER","req":"9411","reqDate":"2026-04-11","status":"wait"},{"code":"2109","type":"رصاصة","trouble":"WATER PUMP,BRAKE BOOSTER AND OIL SEAL , BEARING","req":"10232","reqDate":"2026-06-13","status":"wait"},{"code":"2113","type":"رصاصة","trouble":"CLUTCH PARTS","req":"5727","reqDate":"2025-09-25","status":"wait"},{"code":"2117","type":"رصاصة","trouble":"CLUTCH PARTS","req":"6133","reqDate":"2026-10-14","status":"wait"},{"code":"4101","type":"جي سي بي","trouble":"OVERHAUL ENGINE","req":"7517","reqDate":"2025-12-27","status":"wait"},{"code":"4337","type":"دينة","trouble":"OVERHAUL ENGINE","req":"4744+4764","reqDate":"2025-08-11","status":"wait"},{"code":"4334","type":"سطحة","trouble":"LEAF SPRING AND BRAKE PARTS","req":"12242","reqDate":"2026-11-16","status":"wait"},{"code":"4347","type":"دينة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"4350","type":"سطحة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"prog"},{"code":"20141","type":"سيارة صغيرة","trouble":"INJECTOR REPAIR AND ELECTRICAL SYSTEM REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"20194","type":"سيارة صغيرة","trouble":"OVERHAUL ENGINE","req":"11163","reqDate":"2026-08-13","status":"wait"},{"code":"20268","type":"سيارة صغيرة","trouble":"4X4 NOT WORKING AND ENGINE OVERHEATING","req":"","reqDate":null,"status":"prog"}],"done":[{"code":"1254","type":"بلدوزر","trouble":"OIL LEAKAGE CHANGE HYDROLIC HOSE & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1317","type":"رصاصة","trouble":"OIL LEAKAGE REPAIR & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1515","type":"جريدر","trouble":"OIL LEAKAGE REPAIR PISTON REPAIR KIT CHANGE & ELECTRICAL SYSTEM REPAIR , OIL SERVICE","out":"2026-11-07"},{"code":"1250","type":"بلدوزر","trouble":"OIL LEAKAGE REPAIR HYDROLIC HOSE CHANGE & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1245","type":"بلدوزر","trouble":"COOLING SYSTEM REPAIR & CRANK PULLEY , BELT TIGHTNER AND TRACK CHAIN CHANGE","out":"2026-11-07"},{"code":"1523","type":"جريدر","trouble":"OIL LEAKAGE REPAIR PISTON REPAIR KIT CHANGE & ELECTRICAL SYSTEM REPAIR , OIL SERVICE","out":"2026-11-07"},{"code":"1237","type":"بلدوزر","trouble":"RIPPER CHANGE","out":"2026-11-07"},{"code":"1260","type":"بلدوزر","trouble":"OIL SERVICE","out":"2026-11-07"},{"code":"1266","type":"بلدوزر","trouble":"RADIATOR LEAKAGE REPAIR & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1257","type":"بلدوزر","trouble":"EXALATOR ADJUSTMENT & SPROCKET CHANGE","out":"2026-11-07"},{"code":"1146","type":"تنكر","trouble":"FUEL SYSTEM REPAIR , AC SYSTEM REPAIR CHANGE BATTERY","out":"2026-11-07"},{"code":"20193","type":"سيارة صغيرة","trouble":"BRAKE SYSTEM REPAIR , CALIPER KIT CHANGE , TYRE BOLT & BRAKE OIL","out":"2026-11-07"},{"code":"1048","type":"قلاب","trouble":"LEAF SPRING AND BUSHING , AIR DRIYER VALVE , VALVE REPAIR AC REPAIR","out":"2026-11-08"},{"code":"1056","type":"قلاب","trouble":"AC REPAIR , STEERING SYSTEM REPAIR , GEAR LEVER","out":"2026-11-08"},{"code":"1634","type":"شيول","trouble":"PIOLET PUMP , HYDROLIC SYSTEM REPAIR AND RADIATOR TANK","out":"2026-11-08"},{"code":"1049","type":"قلاب","trouble":"AC FAN & STOP LIGHT , TYRE BOLT CHANGE","out":"2026-11-09"},{"code":"1447","type":"لوبد","trouble":"OVERHAUL GEAR & ELECTRICAL CHECKUP","out":"2026-11-09"},{"code":"2124","type":"رصاصة","trouble":"PULLEY TIGHTNER CHANGE","out":"2026-11-09"},{"code":"1247","type":"بلدوزر","trouble":"STEERING PUMP REPAIR AND BATTERY & ELECTRICAL SYSTEM REPAIR","out":"2026-11-10"},{"code":"20159","type":"سيارة صغيرة","trouble":"PASSING ELECTRICAL AND MECHANICAL CHECKUP","out":"2026-11-10"},{"code":"4371","type":"باص","trouble":"PASSING ELECTRICAL AND MECHANICAL CHECKUP","out":"2026-11-10"},{"code":"1091","type":"قلاب","trouble":"PASSING ELECTRICAL REPAIR & 4 TYRE CHANGE","out":"2026-11-11"},{"code":"1080","type":"قلاب","trouble":"PASSING AC REPAIR , ELECTRICAL REPAIR","out":"2026-11-11"},{"code":"4343","type":"دينة","trouble":"BRAKE PIPE","out":"2026-11-11"},{"code":"20245","type":"سيارة صغيرة","trouble":"ELECTRICAL SYSTEM REPAIR","out":"2026-11-11"},{"code":"1225","type":"بلدوزر","trouble":"HYDROLIC PUMP REPAIR AND GEAR PUMP REPAIR","out":"2026-11-12"},{"code":"1326","type":"رصاصة","trouble":"OIL LEAKAGE & DRUM OIL CHANGE , WELDING WORK","out":"2026-11-12"},{"code":"4003","type":"كرين","trouble":"AC COMPRESSOR CHANGE","out":"2026-11-12"},{"code":"1219","type":"بلدوزر","trouble":"DIESEL PUMP REPAIR , TRANSFER PUMP CHANGE HYDROLIC PISTON SEAL KIT","out":"2026-11-14"},{"code":"1671","type":"شيول","trouble":"BUCKET ISSUE AND OIL SERVICE WITH FILTER","out":"2026-11-15"},{"code":"1045","type":"قلاب","trouble":"STEERING SYSTEM REPAIR , AC REPAIR , ELECTRICAL REPAIR STEERING BOX WAITING AC CONDENSER","out":"2026-11-15"},{"code":"1078","type":"قلاب","trouble":"AC REPAIR , STEERING PUMP","out":"2026-11-15"},{"code":"20254","type":"سيارة صغيرة","trouble":"OVERHAUL CLUTCH","out":"2026-11-15"},{"code":"20262","type":"سيارة صغيرة","trouble":"DRIVE SHAFT AND SHOCKABASOR","out":"2026-11-15"},{"code":"1249","type":"بلدوزر","trouble":"UNDERCURRAGE REPAIR & HYDROLIC PISTON SEAL KIT, BUCKET END BIT CHANGE","out":"2026-11-16"},{"code":"1522","type":"جريدر","trouble":"HYDROLIC LEAKAGE REPAIR & BLADE PISTON REPAIR CHANGE TYRE","out":"2026-11-16"}],"obstacles":["نقص في عمالة الورش وتم طلب تزفير عمالة من شئون الموظفين","تعيين مدير مشتريات قطع غيار تم طلب من شئون الموظفين","عدد 15 معدة متوقفة القطع الغيار","عدد4جنازير قي الصناعية متوقفة علي الاصلاح بقيمة30000ريال( اقترح فتح حساب بن شهاب) طلبية كفرات عدد10كغر من كل نوع (1200/24*22.5*325 95/24) بقيمة 41515ريال","تامين عهدة كااش للخزنة مبلغ 10000ريال اسبوعية لتسيير الطلبائ الطارئة","سداد الموردين المذكورين ادتاه لاهميتهم الضرورية"],"suppliers":[{"code":"810100000100","name":"شركة الراشد للاٍطارات","total":1110858.37,"a":[98647,49323.5,0,0,0,962887.87],"pay":100000,"payDate":"2026-10-13"},{"code":"810100000129","name":"شركة بترومين للزيوت","total":1038491.75,"a":[256128,0,0,0,464991,317372.75],"pay":200000,"payDate":"2026-10-13"},{"code":"810100000058","name":"شركة الجسورة العربية","total":507210.46,"a":[2777.25,21325.6,661.25,7692.58,108252.17,366501.61],"pay":920,"payDate":"2026-10-22"},{"code":"810100000065","name":"شركة بن شهاب للتجارةوالمقاولات","total":271367.24,"a":[6940.25,14950,0,11787.5,170927.44,66762.05],"pay":782,"payDate":"2026-07-14"},{"code":"810100000064","name":"شركه الزاهد للتركتورات والمعدات الثقيله المحدودة","total":172237.15,"a":[1872.9,0,0,0,170364.25,0],"pay":1873,"payDate":"2026-10-22"},{"code":"810100000078","name":"المركز الالى السعودى","total":120717.39,"a":[0,0,0,33438.55,25049.07,62229.77],"pay":1863,"payDate":"2026-10-25"},{"code":"810100000093","name":"ورشة السديس","total":102466.45,"a":[0,0,2185,13437.75,21919,64924.7],"pay":3220,"payDate":"2026-10-11"},{"code":"810100000043","name":"مؤسسة سلمان راضى عويضه الخالدى التجاريه","total":100798.7,"a":[0,0,7160.32,4357.59,20552.31,68728.48],"pay":15000,"payDate":"2026-06-18"},{"code":"810100000026","name":"مؤسسه أبيار القصيم","total":81020.4,"a":[0,6330,27051,7983,26215.02,13441.38],"pay":6330,"payDate":"2026-09-16"},{"code":"810100000073","name":"مؤسسه رواد الفلاتر التجاريه","total":72524.46,"a":[586.5,6871.83,0,2541.5,14730.95,47793.68],"pay":587,"payDate":"2026-10-25"},{"code":"810100000051","name":"مستودع البلاد لبيع قطع غيار تويوتا","total":48903.52,"a":[6474.58,2587.96,24128,15712.98,0,0],"pay":672,"payDate":"2026-10-25"},{"code":"810100000046","name":"مؤسسة دارك التجارية","total":9590.72,"a":[7508.09,1397.99,684.64,0,0,0],"pay":3046,"payDate":"2026-10-25"}],"plan":[{"code":"1045","type":"قلاب","job":"STEERING SYSTEM REPAIR , AC REPAIR , ELECTRICAL REPAIR STEERING BOX WAITING AC CONDENSER","tech":"DANISH/802173","status":"done"},{"code":"1078","type":"قلاب","job":"AC REPAIR , STEERING PUMP","tech":"SAMEER/802548","status":"done"},{"code":"1141","type":"تنكر","job":"BRAKE SYSTEM REPAIR AND ELECTRICAL REPAIR , AC REPAIR","tech":"NAWAB/802663 RAFIQ/801565","status":"prog"},{"code":"20262","type":"سيارة صغيرة","job":"DRIVE SHAFT AND SHOCKABASOR","tech":"SHARUKH/803073 SHARUKH/803132","status":"done"},{"code":"20254","type":"سيارة صغيرة","job":"OVERHAUL CLUTCH","tech":"SHARUKH/803073 SHARUKH/803132","status":"done"},{"code":"1671","type":"شيول","job":"BUCKET ISSUE AND OIL SERVICE WITH FILTER","tech":"MILLER/800973 OSMAN/802365","status":"done"},{"code":"1673","type":"شيول","job":"GEAR PROBLEM","tech":"BOB/802966 JEFFERY/803145","status":"prog"},{"code":"1219","type":"بلدوزر","job":"HYDROLIC PISTON SEAL KIT","tech":"AHMED/809509 ISAAM/801149","status":"done"}],"sites":[{"code":"1148","type":"تنكر","loc":"الجافورة","need":"Tyre -02 nos"},{"code":"1092","type":"قلاب","loc":"الجافورة","need":"Tyre -04 nos"},{"code":"1159","type":"تنكر","loc":"الجافورة","need":"Tyre -02 nos"},{"code":"1125","type":"تنكر","loc":"الجافورة","need":"Seat Belt"},{"code":"1520","type":"جريدر","loc":"الجافورة","need":"Hose Fitting"},{"code":"1256","type":"بلدوزر","loc":"Well-site","need":"Piston Seal"},{"code":"1224","type":"بلدوزر","loc":"Well-site","need":"Battery"},{"code":"1242","type":"بلدوزر","loc":"Well-site","need":"Transmission Seal"},{"code":"1071","type":"قلاب","loc":"Well-site","need":"Clutch Booster"},{"code":"1147","type":"تنكر","loc":"Well-site","need":"Gear Cable"},{"code":"1047","type":"قلاب","loc":"Well-site","need":"Gear Shifting Cylinder & CHF oil"},{"code":"1650","type":"شيول","loc":"ينبع","need":"Electrical and Injector"},{"code":"1266","type":"بلدوزر","loc":"ينبع","need":"Chain"},{"code":"1162","type":"تنكر","loc":"ينبع","need":"Tyre -02 nos"},{"code":"10100","type":"قلاب","loc":"ينبع","need":"Tyre -02 nos"}]},"2026-11-17":{"breakdowns":[{"code":"1042","type":"قلاب","trouble":"PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1043","type":"قلاب","trouble":"PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1044","type":"قلاب","trouble":"GEAR PROBLEM & PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1046","type":"قلاب","trouble":"AC REPAIR , ELECTRICAL REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1050","type":"قلاب","trouble":"GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1053","type":"قلاب","trouble":"GEAR PROBLEM & PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1054","type":"قلاب","trouble":"GEAR PROBLEM & BRAKE SYSTEM REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1055","type":"قلاب","trouble":"OVERHAUL CLUTCH AND STEERING REPAIR KIT","req":"","reqDate":null,"status":"prog"},{"code":"1058","type":"قلاب","trouble":"PASSING & ELECTRICAL SYSTEM REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1059","type":"قلاب","trouble":"GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1060","type":"قلاب","trouble":"GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1062","type":"قلاب","trouble":"HYDROLIC JACK PISTON & GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1063","type":"قلاب","trouble":"OVERHAUL CLUTCH","req":"","reqDate":null,"status":"insp"},{"code":"1069","type":"قلاب","trouble":"ACCIDENT REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1070","type":"قلاب","trouble":"GEAR LEVER & DAINTING REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1082","type":"قلاب","trouble":"GEAR PROBLEM & PASSING","req":"","reqDate":null,"status":"insp"},{"code":"1083","type":"قلاب","trouble":"HYDROLIC JACK PISTON & GEAR PROBLEM","req":"","reqDate":null,"status":"insp"},{"code":"1141","type":"تنكر","trouble":"BRAKE SYSTEM REPAIR AND ELECTRICAL REPAIR , AC REPAIR WAITING FLANGE","req":"","reqDate":null,"status":"prog"},{"code":"1142","type":"تنكر","trouble":"OVERHAUL GEAR BOX AND CLUTCH , ELECTRICAL SYSTEM REPAIR, TANK ISSUE, SILENCER ISSUE","req":"","reqDate":null,"status":"insp"},{"code":"1144","type":"تنكر","trouble":"OVERHAUL GEAR BOX AND ELECTRICAL SYSTEM REPAIR","req":"12243","reqDate":"2026-11-16","status":"wait"},{"code":"1151","type":"تنكر","trouble":"PASSING AND WATING AIR VALVE REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1228","type":"بلدوزر","trouble":"HYDROLIC LEAKAGE PISTON REPAIR & BATTERY","req":"12235","reqDate":"2026-11-16","status":"wait"},{"code":"1231","type":"بلدوزر","trouble":"ELECTRICAL SYSTEM REPAIR & OIL LEAKAGE","req":"","reqDate":null,"status":"insp"},{"code":"1234","type":"بلدوزر","trouble":"HYDROLIC LEAKAGE PISTON REPAIR & BATTERY","req":"12234","reqDate":"2026-11-16","status":"wait"},{"code":"1239","type":"بلدوزر","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1243","type":"بلدوزر","trouble":"TRACK CHAIN ISSUE AND OIL LEAKAGE REPAIR","req":"","reqDate":null,"status":"insp"},{"code":"1248","type":"بلدوزر","trouble":"OVERHAUL ENGINE","req":"12012","reqDate":"2026-10-24","status":"wait"},{"code":"1253","type":"بلدوزر","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1314","type":"رصاصة","trouble":"DIRENTIAL PARTS","req":"7667","reqDate":"2026-01-05","status":"wait"},{"code":"1316","type":"رصاصة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1318","type":"رصاصة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1322","type":"رصاصة","trouble":"ELECTRICAL SYSTEM REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1323","type":"رصاصة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1506","type":"جريدر","trouble":"OIL LEAKAGE REPAIR AND CONTROL CHECKUP WAITING FOR BATTERY","req":"11652","reqDate":"2026-09-19","status":"wait"},{"code":"1510","type":"جريدر","trouble":"HYDROLIC PUMP REPAIR","req":"9134","reqDate":"2026-03-26","status":"wait"},{"code":"1513","type":"جريدر","trouble":"HYDROLIC PUMP REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1627","type":"شيول","trouble":"HYDROLIC PUMP, PIOLET PUMP, STEERING PUMP AND SENSOR","req":"","reqDate":null,"status":"prog"},{"code":"1630","type":"شيول","trouble":"PIOLET PUMP AND RADIATOR TANK","req":"10640+12073","reqDate":"2026-07-07","status":"wait"},{"code":"1635","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1638","type":"شيول","trouble":"HYDROLIC PUMP & CONTROL","req":"12194","reqDate":"2026-11-10","status":"wait"},{"code":"1639","type":"شيول","trouble":"HYDROLIC PUMP REPAIR AND FAN PUMP","req":"11825","reqDate":"2026-10-04","status":"wait"},{"code":"1646","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1648","type":"شيول","trouble":"OVERHAUL ENGINE","req":"11914+11915","reqDate":"2026-10-14","status":"wait"},{"code":"1651","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1657","type":"شيول","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"1673","type":"شيول","trouble":"GEAR PROBLEM CONTROL LEAKAGE REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1674","type":"شيول","trouble":"FUEL SYSTEM REPAIR (NEED NEW INJECTORS)","req":"","reqDate":null,"status":"prog"},{"code":"1676","type":"شيول","trouble":"OIL LEAKAGE REPAIR AND ELECTRICAL REPAIR & BUCKET PIN , BUSHING","req":"","reqDate":null,"status":"prog"},{"code":"1708","type":"بوكلين","trouble":"OVERHEAT ENGINE & ELECTRICAL SYSTEM REPAIR","req":"12236","reqDate":"2026-11-16","status":"wait"},{"code":"1803","type":"فرادة","trouble":"PISTON REPAIR & ELECTRICAL REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"1804","type":"فرادة","trouble":"ECM COMPUTER","req":"9411","reqDate":"2026-04-11","status":"wait"},{"code":"2109","type":"رصاصة","trouble":"WATER PUMP,BRAKE BOOSTER AND OIL SEAL , BEARING","req":"10232","reqDate":"2026-06-13","status":"wait"},{"code":"2113","type":"رصاصة","trouble":"CLUTCH PARTS","req":"5727","reqDate":"2025-09-25","status":"wait"},{"code":"2117","type":"رصاصة","trouble":"CLUTCH PARTS","req":"6133","reqDate":"2026-10-14","status":"wait"},{"code":"4101","type":"جي سي بي","trouble":"OVERHAUL ENGINE","req":"7517","reqDate":"2025-12-27","status":"wait"},{"code":"4337","type":"دينة","trouble":"OVERHAUL ENGINE","req":"4744+4764","reqDate":"2025-08-11","status":"wait"},{"code":"4334","type":"سطحة","trouble":"LEAF SPRING AND BRAKE PARTS","req":"12242","reqDate":"2026-11-16","status":"wait"},{"code":"4347","type":"دينة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"insp"},{"code":"4350","type":"سطحة","trouble":"OVERHAUL ENGINE","req":"","reqDate":null,"status":"prog"},{"code":"20141","type":"سيارة صغيرة","trouble":"INJECTOR REPAIR AND ELECTRICAL SYSTEM REPAIR","req":"","reqDate":null,"status":"prog"},{"code":"20194","type":"سيارة صغيرة","trouble":"OVERHAUL ENGINE","req":"11163","reqDate":"2026-08-13","status":"wait"},{"code":"20268","type":"سيارة صغيرة","trouble":"4X4 NOT WORKING AND ENGINE OVERHEATING","req":"","reqDate":null,"status":"prog"}],"done":[{"code":"1254","type":"بلدوزر","trouble":"OIL LEAKAGE CHANGE HYDROLIC HOSE & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1317","type":"رصاصة","trouble":"OIL LEAKAGE REPAIR & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1515","type":"جريدر","trouble":"OIL LEAKAGE REPAIR PISTON REPAIR KIT CHANGE & ELECTRICAL SYSTEM REPAIR , OIL SERVICE","out":"2026-11-07"},{"code":"1250","type":"بلدوزر","trouble":"OIL LEAKAGE REPAIR HYDROLIC HOSE CHANGE & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1245","type":"بلدوزر","trouble":"COOLING SYSTEM REPAIR & CRANK PULLEY , BELT TIGHTNER AND TRACK CHAIN CHANGE","out":"2026-11-07"},{"code":"1523","type":"جريدر","trouble":"OIL LEAKAGE REPAIR PISTON REPAIR KIT CHANGE & ELECTRICAL SYSTEM REPAIR , OIL SERVICE","out":"2026-11-07"},{"code":"1237","type":"بلدوزر","trouble":"RIPPER CHANGE","out":"2026-11-07"},{"code":"1260","type":"بلدوزر","trouble":"OIL SERVICE","out":"2026-11-07"},{"code":"1266","type":"بلدوزر","trouble":"RADIATOR LEAKAGE REPAIR & ELECTRICAL SYSTEM REPAIR","out":"2026-11-07"},{"code":"1257","type":"بلدوزر","trouble":"EXALATOR ADJUSTMENT & SPROCKET CHANGE","out":"2026-11-07"},{"code":"1146","type":"تنكر","trouble":"FUEL SYSTEM REPAIR , AC SYSTEM REPAIR CHANGE BATTERY","out":"2026-11-07"},{"code":"20193","type":"سيارة صغيرة","trouble":"BRAKE SYSTEM REPAIR , CALIPER KIT CHANGE , TYRE BOLT & BRAKE OIL","out":"2026-11-07"},{"code":"1048","type":"قلاب","trouble":"LEAF SPRING AND BUSHING , AIR DRIYER VALVE , VALVE REPAIR AC REPAIR","out":"2026-11-08"},{"code":"1056","type":"قلاب","trouble":"AC REPAIR , STEERING SYSTEM REPAIR , GEAR LEVER","out":"2026-11-08"},{"code":"1634","type":"شيول","trouble":"PIOLET PUMP , HYDROLIC SYSTEM REPAIR AND RADIATOR TANK","out":"2026-11-08"},{"code":"1049","type":"قلاب","trouble":"AC FAN & STOP LIGHT , TYRE BOLT CHANGE","out":"2026-11-09"},{"code":"1447","type":"لوبد","trouble":"OVERHAUL GEAR & ELECTRICAL CHECKUP","out":"2026-11-09"},{"code":"2124","type":"رصاصة","trouble":"PULLEY TIGHTNER CHANGE","out":"2026-11-09"},{"code":"1247","type":"بلدوزر","trouble":"STEERING PUMP REPAIR AND BATTERY & ELECTRICAL SYSTEM REPAIR","out":"2026-11-10"},{"code":"20159","type":"سيارة صغيرة","trouble":"PASSING ELECTRICAL AND MECHANICAL CHECKUP","out":"2026-11-10"},{"code":"4371","type":"باص","trouble":"PASSING ELECTRICAL AND MECHANICAL CHECKUP","out":"2026-11-10"},{"code":"1091","type":"قلاب","trouble":"PASSING ELECTRICAL REPAIR & 4 TYRE CHANGE","out":"2026-11-11"},{"code":"1080","type":"قلاب","trouble":"PASSING AC REPAIR , ELECTRICAL REPAIR","out":"2026-11-11"},{"code":"4343","type":"دينة","trouble":"BRAKE PIPE","out":"2026-11-11"},{"code":"20245","type":"سيارة صغيرة","trouble":"ELECTRICAL SYSTEM REPAIR","out":"2026-11-11"},{"code":"1225","type":"بلدوزر","trouble":"HYDROLIC PUMP REPAIR AND GEAR PUMP REPAIR","out":"2026-11-12"},{"code":"1326","type":"رصاصة","trouble":"OIL LEAKAGE & DRUM OIL CHANGE , WELDING WORK","out":"2026-11-12"},{"code":"4003","type":"كرين","trouble":"AC COMPRESSOR CHANGE","out":"2026-11-12"},{"code":"1219","type":"بلدوزر","trouble":"DIESEL PUMP REPAIR , TRANSFER PUMP CHANGE HYDROLIC PISTON SEAL KIT","out":"2026-11-14"},{"code":"1671","type":"شيول","trouble":"BUCKET ISSUE AND OIL SERVICE WITH FILTER","out":"2026-11-15"},{"code":"1045","type":"قلاب","trouble":"STEERING SYSTEM REPAIR , AC REPAIR , ELECTRICAL REPAIR STEERING BOX WAITING AC CONDENSER","out":"2026-11-15"},{"code":"1078","type":"قلاب","trouble":"AC REPAIR , STEERING PUMP","out":"2026-11-15"},{"code":"20254","type":"سيارة صغيرة","trouble":"OVERHAUL CLUTCH","out":"2026-11-15"},{"code":"20262","type":"سيارة صغيرة","trouble":"DRIVE SHAFT AND SHOCKABASOR","out":"2026-11-15"},{"code":"1249","type":"بلدوزر","trouble":"UNDERCURRAGE REPAIR & HYDROLIC PISTON SEAL KIT, BUCKET END BIT CHANGE","out":"2026-11-16"},{"code":"1522","type":"جريدر","trouble":"HYDROLIC LEAKAGE REPAIR & BLADE PISTON REPAIR CHANGE TYRE","out":"2026-11-16"}],"obstacles":["نقص في عمالة الورش وتم طلب تزفير عمالة من شئون الموظفين","تعيين مدير مشتريات قطع غيار تم طلب من شئون الموظفين","عدد 15 معدة متوقفة القطع الغيار","عدد4جنازير قي الصناعية متوقفة علي الاصلاح بقيمة30000ريال( اقترح فتح حساب بن شهاب) طلبية كفرات عدد10كغر من كل نوع (1200/24*22.5*325 95/24) بقيمة 41515ريال","تامين عهدة كااش للخزنة مبلغ 10000ريال اسبوعية لتسيير الطلبائ الطارئة","سداد الموردين المذكورين ادتاه لاهميتهم الضرورية"],"suppliers":[{"code":"810100000100","name":"شركة الراشد للاٍطارات","total":1110858.37,"a":[98647,49323.5,0,0,0,962887.87],"pay":100000,"payDate":"2026-10-13"},{"code":"810100000129","name":"شركة بترومين للزيوت","total":1038491.75,"a":[256128,0,0,0,464991,317372.75],"pay":200000,"payDate":"2026-10-13"},{"code":"810100000058","name":"شركة الجسورة العربية","total":507210.46,"a":[2777.25,21325.6,661.25,7692.58,108252.17,366501.61],"pay":920,"payDate":"2026-10-22"},{"code":"810100000065","name":"شركة بن شهاب للتجارةوالمقاولات","total":271367.24,"a":[6940.25,14950,0,11787.5,170927.44,66762.05],"pay":782,"payDate":"2026-07-14"},{"code":"810100000064","name":"شركه الزاهد للتركتورات والمعدات الثقيله المحدودة","total":172237.15,"a":[1872.9,0,0,0,170364.25,0],"pay":1873,"payDate":"2026-10-22"},{"code":"810100000078","name":"المركز الالى السعودى","total":120717.39,"a":[0,0,0,33438.55,25049.07,62229.77],"pay":1863,"payDate":"2026-10-25"},{"code":"810100000093","name":"ورشة السديس","total":102466.45,"a":[0,0,2185,13437.75,21919,64924.7],"pay":3220,"payDate":"2026-10-11"},{"code":"810100000043","name":"مؤسسة سلمان راضى عويضه الخالدى التجاريه","total":100798.7,"a":[0,0,7160.32,4357.59,20552.31,68728.48],"pay":15000,"payDate":"2026-06-18"},{"code":"810100000026","name":"مؤسسه أبيار القصيم","total":81020.4,"a":[0,6330,27051,7983,26215.02,13441.38],"pay":6330,"payDate":"2026-09-16"},{"code":"810100000073","name":"مؤسسه رواد الفلاتر التجاريه","total":72524.46,"a":[586.5,6871.83,0,2541.5,14730.95,47793.68],"pay":587,"payDate":"2026-10-25"},{"code":"810100000051","name":"مستودع البلاد لبيع قطع غيار تويوتا","total":48903.52,"a":[6474.58,2587.96,24128,15712.98,0,0],"pay":672,"payDate":"2026-10-25"},{"code":"810100000046","name":"مؤسسة دارك التجارية","total":9590.72,"a":[7508.09,1397.99,684.64,0,0,0],"pay":3046,"payDate":"2026-10-25"}],"plan":[{"code":"1045","type":"قلاب","job":"STEERING SYSTEM REPAIR , AC REPAIR , ELECTRICAL REPAIR STEERING BOX WAITING AC CONDENSER","tech":"DANISH/802173","status":"done"},{"code":"1078","type":"قلاب","job":"AC REPAIR , STEERING PUMP","tech":"SAMEER/802548","status":"done"},{"code":"1141","type":"تنكر","job":"BRAKE SYSTEM REPAIR AND ELECTRICAL REPAIR , AC REPAIR","tech":"NAWAB/802663 RAFIQ/801565","status":"prog"},{"code":"20262","type":"سيارة صغيرة","job":"DRIVE SHAFT AND SHOCKABASOR","tech":"SHARUKH/803073 SHARUKH/803132","status":"done"},{"code":"20254","type":"سيارة صغيرة","job":"OVERHAUL CLUTCH","tech":"SHARUKH/803073 SHARUKH/803132","status":"done"},{"code":"1671","type":"شيول","job":"BUCKET ISSUE AND OIL SERVICE WITH FILTER","tech":"MILLER/800973 OSMAN/802365","status":"done"},{"code":"1673","type":"شيول","job":"GEAR PROBLEM","tech":"BOB/802966 JEFFERY/803145","status":"prog"},{"code":"1219","type":"بلدوزر","job":"HYDROLIC PISTON SEAL KIT","tech":"AHMED/809509 ISAAM/801149","status":"done"}],"sites":[{"code":"1148","type":"تنكر","loc":"الجافورة","need":"Tyre -02 nos"},{"code":"1092","type":"قلاب","loc":"الجافورة","need":"Tyre -04 nos"},{"code":"1159","type":"تنكر","loc":"الجافورة","need":"Tyre -02 nos"},{"code":"1125","type":"تنكر","loc":"الجافورة","need":"Seat Belt"},{"code":"1520","type":"جريدر","loc":"الجافورة","need":"Hose Fitting"},{"code":"1256","type":"بلدوزر","loc":"Well-site","need":"Piston Seal"},{"code":"1224","type":"بلدوزر","loc":"Well-site","need":"Battery"},{"code":"1242","type":"بلدوزر","loc":"Well-site","need":"Transmission Seal"},{"code":"1071","type":"قلاب","loc":"Well-site","need":"Clutch Booster"},{"code":"1147","type":"تنكر","loc":"Well-site","need":"Gear Cable"},{"code":"1047","type":"قلاب","loc":"Well-site","need":"Gear Shifting Cylinder & CHF oil"},{"code":"1650","type":"شيول","loc":"ينبع","need":"Electrical and Injector"},{"code":"1266","type":"بلدوزر","loc":"ينبع","need":"Chain"},{"code":"1162","type":"تنكر","loc":"ينبع","need":"Tyre -02 nos"},{"code":"10100","type":"قلاب","loc":"ينبع","need":"Tyre -02 nos"}]}},"hr":[{"date":"2026-11-15","settle":17,"leave":15,"lic":21,"iqama":2,"vdec":"","vjan":"","acc":0,"accText":"لا يوجد اصابات عمل","notes":""},{"date":"2026-11-16","settle":16,"leave":15,"lic":21,"iqama":9,"vdec":9,"vjan":"تحت الاجراء","acc":0,"accText":"لا يوجد اصابات عمل","notes":""}]}</script>
+<script>
+(function(){
+"use strict";
+var RAW = JSON.parse(document.getElementById("data").textContent), DATA = RAW.days, HR = (RAW.hr||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+var DAYS = Object.keys(DATA).sort();
+var MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+var ST = {insp:"قيد الفحص", prog:"جاري العمل", wait:"بانتظار قطع غيار"};
+var ST_ORDER = ["wait","prog","insp"];
+var TABS = [["summary","الملخص التنفيذي"],["breakdowns","أعطال الورشة"],["done","الأعمال المنجزة"],["sites","أعطال المواقع"],["plan","الخطة الأسبوعية"]];
+var state = {day: DAYS[DAYS.length-1], tab:"summary", q:"", f:"all", doneDay:null};
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fd(iso, short){ if(!iso) return "—"; var p=iso.split("-"); if(p.length!==3) return esc(iso); return (+p[2])+" "+MONTHS[+p[1]-1]+(short?"":" "+p[0]); }
+function daysBetween(a,b){ return Math.round((Date.parse(b)-Date.parse(a))/864e5); }
+function money(n){ return Math.round(n).toLocaleString("en-US"); }
+function count(arr, fn){ var n=0; arr.forEach(function(x){ if(fn(x)) n++; }); return n; }
+function groupBy(arr, key){ var m={}; arr.forEach(function(x){ var k=key(x); (m[k]=m[k]||[]).push(x); }); return m; }
+function prevDay(d){ var i=DAYS.indexOf(d); return i>0?DAYS[i-1]:null; }
+
+function metrics(d){
+  var D=DATA[d];
+  return {
+    stopped:D.breakdowns.length,
+    wait:count(D.breakdowns,function(x){return x.status==="wait";}),
+    prog:count(D.breakdowns,function(x){return x.status==="prog";}),
+    insp:count(D.breakdowns,function(x){return x.status==="insp";}),
+    done:D.done.length, sites:D.sites.length, obstacles:D.obstacles.length,
+    planDone:count(D.plan,function(x){return x.status==="done";}), plan:D.plan.length,
+    debt:D.suppliers.reduce(function(s,x){return s+x.total;},0),
+    over180:D.suppliers.reduce(function(s,x){return s+x.a[5];},0)
+  };
+}
+function delta(now, before, goodWhenUp, pd){
+  if(before==null) return '<span class="dl">أول يوم في السجل</span>';
+  var x=now-before;
+  if(x===0) return '<span class="dl">بدون تغيير عن '+fd(pd,true)+'</span>';
+  var bad = goodWhenUp ? x<0 : x>0;
+  return '<span class="dl '+(bad?"up":"down")+'">'+(x>0?"▲ ":"▼ ")+Math.abs(x)+' عن '+fd(pd,true)+'</span>';
+}
+function pill(s){ return '<span class="pill p-'+s+'">'+ST[s]+'</span>'; }
+
+function changes(d){
+  var p=prevDay(d); if(!p) return null;
+  var A=DATA[p], B=DATA[d], out=[];
+  var pm={}; A.breakdowns.forEach(function(x){pm[x.code]=x;});
+  var nm={}; B.breakdowns.forEach(function(x){nm[x.code]=x;});
+  var entered=B.breakdowns.filter(function(x){return !pm[x.code];});
+  var left=A.breakdowns.filter(function(x){return !nm[x.code];});
+  var moved=B.breakdowns.filter(function(x){return pm[x.code]&&pm[x.code].status!==x.status;});
+  function names(l){ return l.map(function(x){return esc(x.type)+" "+esc(x.code);}).join("، "); }
+  if(entered.length) out.push("دخلت الورشة "+entered.length+" معدة: "+names(entered));
+  if(left.length) out.push("خرجت من قائمة المتوقف "+left.length+" معدة: "+names(left));
+  moved.forEach(function(x){ out.push(esc(x.type)+" "+esc(x.code)+": من «"+ST[pm[x.code].status]+"» إلى «"+ST[x.status]+"»"); });
+  function diffSet(a,b,key){ var s={}; a.forEach(function(x){s[key(x)]=1;}); return b.filter(function(x){return !s[key(x)];}); }
+  var kd=function(x){return x.code+"|"+x.out;}, ks=function(x){return x.code+"|"+x.need;}, ko=function(x){return x;};
+  var nd=diffSet(A.done,B.done,kd); if(nd.length) out.push("أعمال منجزة جديدة: "+nd.length+" ("+names(nd)+")");
+  var ns=diffSet(A.sites,B.sites,ks), cs=diffSet(B.sites,A.sites,ks);
+  if(ns.length) out.push("أعطال مواقع جديدة: "+ns.length+" ("+names(ns)+")");
+  if(cs.length) out.push("أعطال مواقع أُغلقت: "+cs.length+" ("+names(cs)+")");
+  var no=diffSet(A.obstacles,B.obstacles,ko), co=diffSet(B.obstacles,A.obstacles,ko);
+  if(no.length) out.push("عقبات جديدة: "+no.length);
+  if(co.length) out.push("عقبات أُغلقت: "+co.length);
+  var pp={}; A.plan.forEach(function(x){pp[x.code+"|"+x.job]=x.status;});
+  var pc=B.plan.filter(function(x){var o=pp[x.code+"|"+x.job]; return o&&o!==x.status;});
+  if(pc.length) out.push("تغيّرت حالة "+pc.length+" من أعمال الخطة الأسبوعية");
+  var dd=metrics(d).debt-metrics(p).debt;
+  if(Math.abs(dd)>=1) out.push("أرصدة الموردين "+(dd>0?"زادت":"انخفضت")+" بمقدار "+money(Math.abs(dd))+" ريال");
+  return {prev:p, items:out};
+}
+
+function typeBars(D){
+  var g=groupBy(D.breakdowns,function(x){return x.type;});
+  var rows=Object.keys(g).map(function(t){ var r={type:t,total:g[t].length}; ST_ORDER.forEach(function(s){ r[s]=count(g[t],function(x){return x.status===s;}); }); return r; })
+    .sort(function(a,b){return b.total-a.total;});
+  var max=rows.length?rows[0].total:1;
+  return '<div class="legend">'+ST_ORDER.map(function(s){return '<span><i class="dot s-'+s+'"></i>'+ST[s]+'</span>';}).join("")+'</div><div class="bars">'+
+    rows.map(function(r){
+      return '<div class="brow"><span>'+esc(r.type)+'</span><div class="track">'+ST_ORDER.map(function(s){
+        return r[s]?'<div class="seg s-'+s+'" style="width:'+(r[s]/max*100)+'%" title="'+ST[s]+': '+r[s]+'">'+r[s]+'</div>':"";
+      }).join("")+'</div><span class="tot num">'+r.total+'</span></div>';
+    }).join("")+'</div>';
+}
+function simpleBars(pairs, cls){
+  var max=Math.max.apply(null,pairs.map(function(p){return p[1];}).concat([1]));
+  return '<div class="bars">'+pairs.map(function(p){
+    return '<div class="brow"><span>'+esc(p[0])+'</span><div class="track"><div class="seg '+cls+'" style="width:'+(p[1]/max*100)+'%">'+p[1]+'</div></div><span class="tot num"></span></div>';
+  }).join("")+'</div>';
+}
+function waitingRows(D,d){
+  return D.breakdowns.filter(function(x){return x.status==="wait";}).map(function(x){
+    return {x:x, days:x.reqDate?daysBetween(x.reqDate,d):null};
+  }).sort(function(a,b){return (b.days==null?-1:b.days)-(a.days==null?-1:a.days);});
+}
+function waitTable(rows){
+  return '<div class="tw"><table><thead><tr><th>الكود</th><th>النوع</th><th>العطل</th><th>رقم الطلب</th><th>تاريخ الطلب</th><th class="r">أيام الانتظار</th></tr></thead><tbody>'+
+    rows.map(function(r){ return '<tr><td class="num">'+esc(r.x.code)+'</td><td>'+esc(r.x.type)+'</td><td class="en">'+esc(r.x.trouble)+'</td><td class="num">'+esc(r.x.req||"—")+'</td><td style="white-space:nowrap">'+fd(r.x.reqDate)+'</td><td class="r num '+(r.days>=90?"old":"")+'">'+(r.days==null?"—":r.days)+'</td></tr>'; }).join("")+
+    '</tbody></table></div>';
+}
+
+function renderSummary(){
+  var d=state.day, D=DATA[d], m=metrics(d), p=prevDay(d), pm=p?metrics(p):{}, h="";
+  h+='<div class="kpis">'+
+    kpi("متوقف بالورشة",m.stopped,delta(m.stopped,pm.stopped,false,p),"--accent")+
+    kpi("بانتظار قطع غيار",m.wait,delta(m.wait,pm.wait,false,p),"--wait")+
+    kpi("جاري العمل",m.prog,delta(m.prog,pm.prog,true,p),"--prog")+
+    kpi("قيد الفحص",m.insp,delta(m.insp,pm.insp,false,p),"--insp")+
+    kpi("أعمال منجزة",m.done,delta(m.done,pm.done,true,p),"--prog")+
+    kpi("أعطال بالمواقع",m.sites,delta(m.sites,pm.sites,false,p),"--warn")+'</div>';
+  var c=changes(d);
+  h+='<section class="card change" id="change"><h2>ما الذي تغيّر؟</h2>';
+  if(!c) h+='<p class="note" style="margin:0">هذا أول يوم في السجل، ولا يوجد يوم سابق للمقارنة.</p>';
+  else if(!c.items.length) h+='<p style="margin:0">لا يوجد أي تغيير بين '+fd(c.prev,true)+' و'+fd(d,true)+': نفس المعدات المتوقفة بنفس الحالات، ولا أعمال منجزة أو عقبات جديدة.</p>';
+  else h+='<p class="note" style="margin:0">مقارنة '+fd(d,true)+' مع '+fd(c.prev,true)+'</p><ul>'+c.items.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>';
+  h+='</section>';
+
+  var w=waitingRows(D,d), withDays=w.filter(function(r){return r.days!=null;});
+  var avg=withDays.length?Math.round(withDays.reduce(function(s,r){return s+r.days;},0)/withDays.length):0;
+  h+='<div class="grid2"><section class="card" id="by-type"><h2>المعدات المتوقفة بالورشة حسب النوع</h2><p class="note">'+m.stopped+' معدة، مرتبة من الأكثر توقفًا</p>'+typeBars(D)+'</section>'+
+     '<section class="card" id="oldest"><h2>أقدم طلبات قطع الغيار المعلقة</h2><p class="note">'+m.wait+' معدة بانتظار قطع، متوسط الانتظار '+avg+' يوم. <a class="more" href="#breakdowns">كل الأعطال</a></p>'+waitTable(w.slice(0,7))+'</section></div>';
+
+  var byOut=groupBy(D.done,function(x){return x.out||"";}), outs=Object.keys(byOut).sort();
+  if(!state.doneDay||!byOut[state.doneDay]) state.doneDay=outs[outs.length-1];
+  var maxOut=Math.max.apply(null,outs.map(function(o){return byOut[o].length;}).concat([1]));
+  var sel=byOut[state.doneDay]||[];
+  h+='<section class="card" id="done-sum"><h2>الأعمال المنجزة</h2><p class="note">'+m.done+' معدة خرجت من الورشة'+(outs.length?' من '+fd(outs[0],true)+' إلى '+fd(outs[outs.length-1],true):"")+'. اضغط على أي يوم لعرض أعماله. <a class="more" href="#done">كل الأعمال المنجزة</a></p>'+
+    '<div class="donegrid"><div class="bars">'+outs.map(function(o){ var n=byOut[o].length;
+      return '<button type="button" class="brow dbtn" data-out="'+o+'" aria-pressed="'+(o===state.doneDay)+'"><span>'+fd(o,true)+'</span><span class="track"><span class="seg s-prog" style="width:'+(n/maxOut*100)+'%">'+n+'</span></span><span class="tot num"></span></button>'; }).join("")+'</div>'+
+    '<div><p class="note" style="margin:0 0 6px"><b>'+fd(state.doneDay)+'</b>: '+sel.length+' معدة</p><div class="tw"><table><thead><tr><th>الكود</th><th>النوع</th><th>العمل</th></tr></thead><tbody>'+
+      sel.map(function(x){return '<tr><td class="num">'+esc(x.code)+'</td><td>'+esc(x.type)+'</td><td class="en">'+esc(x.trouble)+'</td></tr>';}).join("")+'</tbody></table></div></div></div></section>';
+
+  var pct=m.plan?Math.round(m.planDone/m.plan*100):0, open=D.plan.filter(function(x){return x.status!=="done";});
+  var byLoc=groupBy(D.sites,function(x){return x.loc;});
+  h+='<div class="grid2"><section class="card" id="plan-sum"><h2>الخطة الأسبوعية</h2><p class="note">تم '+m.planDone+' من '+m.plan+' أعمال</p><div class="big num">'+pct+'%</div><div class="meter"><i style="width:'+pct+'%"></i></div>'+
+       (open.length?'<p class="note" style="margin:10px 0 4px">أعمال جارية</p><div class="tw"><table><tbody>'+open.map(function(x){return '<tr><td class="num">'+esc(x.code)+'</td><td>'+esc(x.type)+'</td><td class="en">'+esc(x.job)+'</td></tr>';}).join("")+'</tbody></table></div>':'')+'</section>'+
+     '<section class="card" id="sites-sum"><h2>أعطال المواقع</h2><p class="note">'+m.sites+' معدة متوقفة خارج الورشة. <a class="more" href="#sites">التفاصيل</a></p>'+
+       simpleBars(Object.keys(byLoc).map(function(l){return [l,byLoc[l].length];}).sort(function(a,b){return b[1]-a[1];}),"s-acc")+'</section></div>';
+
+  h+='<section class="card" id="obs-sum"><h2>العقبات</h2><p class="note">'+m.obstacles+' عقبات مطروحة على الإدارة</p>'+obsBlock(D)+'</section>';
+
+  var COLS=[["stopped","متوقف بالورشة",-1],["wait","بانتظار قطع",-1],["prog","جاري العمل",1],["insp","قيد الفحص",-1],["done","منجز",1],["sites","أعطال المواقع",-1],["obstacles","العقبات",-1],["debt","أرصدة الموردين",-1]];
+  var upto=DAYS.slice(0,DAYS.indexOf(d)+1), series={};
+  COLS.forEach(function(c){ series[c[0]]=upto.map(function(x){return metrics(x)[c[0]];}); });
+  h+='<section class="card" id="history"><h2>سجل الأيام واتجاه المؤشرات</h2><p class="note">المؤشر فوق كل عمود يقارن آخر يوم بالذي قبله، والخط الصغير يوضح الاتجاه من أول يوم في السجل حتى '+fd(d,true)+'. الأخضر تحسن والأحمر تراجع.</p><div class="tw"><table class="hist"><thead><tr><th></th>'+
+    COLS.map(function(c){ return '<th class="r">'+trend(series[c[0]],c[2],c[0]==="debt")+'</th>'; }).join("")+'</tr><tr><th>التاريخ</th>'+
+    COLS.map(function(c){return '<th class="r">'+c[1]+'</th>';}).join("")+'</tr></thead><tbody>'+
+    upto.slice().reverse().map(function(x){var k=metrics(x);return '<tr'+(x===d?' style="font-weight:700"':'')+'><td style="white-space:nowrap">'+fd(x)+'</td>'+COLS.map(function(c){return '<td class="r num">'+(c[0]==="debt"?money(k.debt):k[c[0]])+'</td>';}).join("")+'</tr>';}).join("")+'</tbody></table></div></section>';
+  h+=hrCard(d);
+  return h;
+}
+function trend(vals, goodDir, isMoney){
+  var n=vals.length, last=vals[n-1], prev=n>1?vals[n-2]:null, first=vals[0];
+  var dx=prev==null?0:last-prev, cls="flat", arrow="●", txt="ثابت";
+  if(prev==null){ txt="يوم واحد"; }
+  else if(Math.abs(dx)>=(isMoney?1:0.5)){ var good=dx*goodDir>0; cls=good?"good":"bad"; arrow=dx>0?"▲":"▼"; txt=(isMoney?money(Math.abs(dx)):Math.abs(dx)); }
+  var w=72,hgt=22,min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=max-min||1;
+  var pts=vals.map(function(v,i){ var x=n>1?i/(n-1)*(w-6)+3:w/2; var y=max===min?hgt/2:hgt-3-(v-min)/rng*(hgt-6); return [x,y]; });
+  var line=pts.length>1?'<polyline points="'+pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1);}).join(" ")+'" />':'';
+  var e=pts[pts.length-1], tot=last-first, totGood=tot*goodDir>0;
+  var since=n>2&&Math.abs(tot)>=(isMoney?1:0.5)?'<span class="since '+(totGood?"good":"bad")+'">منذ البداية <bdi dir="ltr">'+(tot>0?"+":"−")+(isMoney?money(Math.abs(tot)):Math.abs(tot))+'</bdi></span>':'';
+  return '<span class="trend '+cls+'"><svg viewBox="0 0 '+w+' '+hgt+'" width="'+w+'" height="'+hgt+'" aria-hidden="true">'+line+'<circle cx="'+e[0].toFixed(1)+'" cy="'+e[1].toFixed(1)+'" r="3"/></svg><span class="tv">'+arrow+' '+txt+'</span>'+since+'</span>';
+}
+function kpi(lab,val,dl,tok){ return '<div class="kpi" style="--k:var('+tok+')"><span class="lab">'+lab+'</span><span class="val num">'+val+'</span>'+dl+'</div>'; }
+
+function tools(chips){
+  var h='<div class="tools"><input type="search" id="q" placeholder="بحث" value="'+esc(state.q)+'" aria-label="بحث">';
+  (chips||[]).forEach(function(c){ h+='<button type="button" class="chip" data-f="'+c[0]+'" aria-pressed="'+(state.f===c[0])+'">'+c[1]+'</button>'; });
+  return h+'</div><div id="tbl"></div>';
+}
+function match(obj){ if(!state.q) return true; var q=state.q.toLowerCase(); return Object.keys(obj).some(function(k){ return String(obj[k]==null?"":obj[k]).toLowerCase().indexOf(q)>=0; }); }
+function tbl(head, rows){
+  if(!rows.length) return '<p class="empty">لا توجد نتائج مطابقة.</p>';
+  return '<div class="tw"><table><thead><tr>'+head.map(function(x){return "<th>"+x+"</th>";}).join("")+'</tr></thead><tbody>'+rows.join("")+'</tbody></table></div>';
+}
+var DETAIL = {
+  breakdowns:{title:"أعطال الورشة", chips:function(D){var m=metrics(state.day);return [["all","الكل "+m.stopped],["wait",ST.wait+" "+m.wait],["prog",ST.prog+" "+m.prog],["insp",ST.insp+" "+m.insp]];},
+    body:function(D){ var r=D.breakdowns.filter(function(x){return (state.f==="all"||x.status===state.f)&&match(x);});
+      return tbl(["م","الكود","النوع","العطل","رقم الطلب","تاريخ الطلب","أيام الانتظار","الحالة"], r.map(function(x,i){ var dz=x.status==="wait"&&x.reqDate?daysBetween(x.reqDate,state.day):null;
+        return '<tr><td class="num">'+(i+1)+'</td><td class="num">'+esc(x.code)+'</td><td>'+esc(x.type)+'</td><td class="en">'+esc(x.trouble)+'</td><td class="num">'+esc(x.req||"—")+'</td><td style="white-space:nowrap">'+fd(x.reqDate)+'</td><td class="num '+(dz>=90?"old":"")+'">'+(dz==null?"—":dz)+'</td><td>'+pill(x.status)+'</td></tr>'; })); }},
+  done:{title:"الأعمال المنجزة", body:function(D){ var r=D.done.filter(match).sort(function(a,b){return (b.out||"").localeCompare(a.out||"");});
+      return tbl(["م","الكود","النوع","العمل المنجز","تاريخ الخروج"], r.map(function(x,i){return '<tr><td class="num">'+(i+1)+'</td><td class="num">'+esc(x.code)+'</td><td>'+esc(x.type)+'</td><td class="en">'+esc(x.trouble)+'</td><td style="white-space:nowrap">'+fd(x.out)+'</td></tr>';})); }},
+  sites:{title:"أعطال المواقع", chips:function(D){ var g=groupBy(D.sites,function(x){return x.loc;}); return [["all","الكل "+D.sites.length]].concat(Object.keys(g).map(function(l){return [l,l+" "+g[l].length];})); },
+    body:function(D){ var r=D.sites.filter(function(x){return (state.f==="all"||x.loc===state.f)&&match(x);});
+      return tbl(["م","الكود","النوع","الموقع","الاحتياج"], r.map(function(x,i){return '<tr><td class="num">'+(i+1)+'</td><td class="num">'+esc(x.code)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.loc)+'</td><td class="en">'+esc(x.need)+'</td></tr>';})); }},
+  plan:{title:"الخطة الأسبوعية", body:function(D){ var r=D.plan.filter(match);
+      return tbl(["م","الكود","النوع","وصف العمل","الفني","الحالة"], r.map(function(x,i){return '<tr><td class="num">'+(i+1)+'</td><td class="num">'+esc(x.code)+'</td><td>'+esc(x.type)+'</td><td class="en">'+esc(x.job)+'</td><td class="en">'+esc(x.tech)+'</td><td><span class="pill p-'+(x.status==="done"?"prog":"warn")+'">'+(x.status==="done"?"تم":"جاري العمل")+'</span></td></tr>';})); }}
+};
+
+var HRF=[["settle","موظفون للتصفية",0],["leave","موظفون في إجازة",0],["lic","رخص مطلوب تجديدها",-1],["iqama","إقامات مطلوب تجديدها",-1],["acc","حوادث وإصابات عمل",-1]];
+function hrAt(d){ var r=null,p=null; HR.forEach(function(x){ if(x.date<=d){ p=r; r=x; } }); return {r:r,p:p}; }
+function hrDelta(now,before,dir,pd){
+  if(before==null||now==null) return '<span class="dl">لا يوجد يوم سابق</span>';
+  var x=now-before; if(x===0) return '<span class="dl">بدون تغيير</span>';
+  var cls=dir===0?"":(x*dir>0?"down":"up");
+  return '<span class="dl '+cls+'">'+(x>0?"▲ ":"▼ ")+Math.abs(x)+' عن '+fd(pd,true)+'</span>';
+}
+function vac(v){ return typeof v==="number"?'<span class="val num">'+v+'</span><span class="dl">موظف</span>':'<span class="val sm">'+(v?esc(v):"—")+'</span><span class="dl">&nbsp;</span>'; }
+function hrCard(d){
+  if(!HR.length) return "";
+  var a=hrAt(d), r=a.r, p=a.p;
+  if(!r) return '<section class="card" id="hr-sum"><h2>الموارد البشرية</h2><p class="note" style="margin:0">لا توجد بيانات موارد بشرية حتى '+fd(d)+'.</p></section>';
+  var lag=r.date!==d?' <span class="pill p-warn">آخر بيانات متاحة: '+fd(r.date,true)+'</span>':'';
+  return '<section class="card" id="hr-sum"><h2>الموارد البشرية</h2><p class="note">بيانات يوم '+fd(r.date)+lag+'.</p><div class="kpis">'+
+    HRF.map(function(f){ var v=r[f[0]]; return '<div class="kpi" style="--k:var('+(f[2]===0?"--accent":(f[0]==="acc"&&v===0?"--prog":"--warn"))+')"><span class="lab">'+f[1]+'</span><span class="val num">'+(v==null?"—":v)+'</span>'+hrDelta(v,p?p[f[0]]:null,f[2],p&&p.date)+'</div>'; }).join("")+
+    '<div class="kpi" style="--k:var(--insp)"><span class="lab">خطة إجازات ديسمبر</span>'+vac(r.vdec)+'</div>'+
+    '<div class="kpi" style="--k:var(--insp)"><span class="lab">خطة إجازات يناير</span>'+vac(r.vjan)+'</div></div>'+
+    (r.accText&&r.acc===0?'<p class="note" style="margin:10px 0 0">الحوادث: '+esc(r.accText)+'</p>':'')+(r.notes?'<p style="margin:8px 0 0">'+esc(r.notes)+'</p>':'')+'</section>';
+}
+function obsText(o,D){
+  var re=/عدد\s*(\d+)\s*معد[ةه]\s*متوقف[ةه]?\s*(?:علي|على)?\s*(?:ال)?قطع/;
+  var m=o.match(re); if(!m) return esc(o);
+  var n=count(D.breakdowns,function(x){return x.status==="wait";});
+  return 'عدد <b class="num">'+n+'</b> معدة متوقفة على قطع الغيار <span class="pill p-insp" title="الرقم في ملف الإكسل: '+m[1]+'">محسوب من الأعطال</span>';
+}
+function obsBlock(D){
+  var isSup=function(o){return o.indexOf("سداد")>=0&&o.indexOf("المورد")>=0;}, shown=false;
+  var h='<ol class="obsfull">'+D.obstacles.map(function(o){ var s=isSup(o); if(s) shown=true; return '<li>'+obsText(o,D)+(s?supTable(D):'')+'</li>'; }).join("")+'</ol>';
+  if(!shown&&D.suppliers.length) h+='<h2 style="margin-top:18px">أرصدة موردي قطع الغيار</h2>'+supTable(D);
+  return h;
+}
+function supTable(D){
+  var r=D.suppliers.slice().sort(function(a,b){return b.total-a.total;}), tot=[0,0,0,0,0,0], all=0;
+  r.forEach(function(s){ all+=s.total; s.a.forEach(function(v,i){tot[i]+=v;}); });
+  return '<div class="supbox"><p class="note" style="margin:0 0 6px">'+r.length+' مورد، إجمالي الأرصدة <b class="num">'+money(all)+'</b> ريال، منها <span class="old num">'+money(tot[5])+'</span> ريال أقدم من 180 يوم</p>'+
+    '<div class="tw"><table><thead><tr>'+["المورد","الإجمالي","حتى 30","31 إلى 60","61 إلى 90","91 إلى 120","121 إلى 180","أكثر من 180","آخر سداد","تاريخه"].map(function(x){return "<th>"+x+"</th>";}).join("")+'</tr></thead><tbody>'+
+    r.map(function(s){ return '<tr><td>'+esc(s.name)+'</td><td class="num"><b>'+money(s.total)+'</b></td>'+s.a.map(function(v,i){return '<td class="num '+(i===5&&v>0?"old":"")+'">'+(v?money(v):"—")+'</td>';}).join("")+'<td class="num">'+money(s.pay)+'</td><td style="white-space:nowrap">'+fd(s.payDate)+'</td></tr>'; }).join("")+
+    '<tr style="font-weight:700"><td>الإجمالي</td><td class="num">'+money(all)+'</td>'+tot.map(function(v){return '<td class="num">'+money(v)+'</td>';}).join("")+'<td></td><td></td></tr></tbody></table></div></div>';
+}
+var HRTAB={title:"الموارد البشرية", body:function(){
+  var r=HR.slice().reverse().filter(match);
+  return tbl(["التاريخ","موظفون للتصفية","موظفون في إجازة","رخص مطلوب تجديدها","إقامات مطلوب تجديدها","خطة إجازات ديسمبر","خطة إجازات يناير","الحوادث","ملاحظات"], r.map(function(x){
+    return '<tr><td style="white-space:nowrap">'+fd(x.date)+'</td>'+["settle","leave","lic","iqama"].map(function(k){return '<td class="num">'+(x[k]==null?"—":x[k])+'</td>';}).join("")+
+      '<td>'+(x.vdec===""?"—":esc(x.vdec))+'</td><td>'+(x.vjan===""?"—":esc(x.vjan))+'</td><td>'+esc(x.accText||x.acc)+'</td><td>'+(x.notes?esc(x.notes):"—")+'</td></tr>'; })); }};
+function render(){
+  var D=DATA[state.day], main=document.getElementById("main"), p=prevDay(state.day);
+  document.getElementById("cmp").textContent = p ? "المقارنة مع "+fd(p,true) : "";
+  var cnt={breakdowns:D.breakdowns.length,done:D.done.length,sites:D.sites.length,plan:D.plan.length};
+  document.getElementById("tabs").innerHTML = TABS.map(function(t){ return '<a href="#'+t[0]+'"'+(t[0]===state.tab?' aria-current="page"':'')+'>'+t[1]+(cnt[t[0]]!=null?'<span class="cnt num">'+cnt[t[0]]+'</span>':'')+'</a>'; }).join("");
+  if(state.tab==="summary"){ main.innerHTML=renderSummary();
+    main.querySelectorAll(".dbtn").forEach(function(b){ b.addEventListener("click",function(){ state.doneDay=b.getAttribute("data-out"); var y=window.scrollY; render(); try{window.scrollTo(0,y);}catch(e){} }); });
+    return; }
+  var def=state.tab==="hr"?HRTAB:DETAIL[state.tab];
+  main.innerHTML='<section class="card"><h2>'+def.title+'</h2><p class="note">'+(state.tab==="hr"?"سجل كل الأيام المتاحة، الأحدث أولًا":"بيانات يوم "+fd(state.day))+'</p>'+tools(def.chips?def.chips(D):null)+'</section>';
+  document.getElementById("tbl").innerHTML=def.body(D);
+  var q=document.getElementById("q");
+  q.addEventListener("input",function(){ state.q=q.value.trim(); document.getElementById("tbl").innerHTML=def.body(D); });
+  main.querySelectorAll(".chip").forEach(function(b){ b.addEventListener("click",function(){ state.f=b.getAttribute("data-f"); render(); }); });
+}
+function route(){ var h=(location.hash||"").replace("#",""); var ok=TABS.some(function(t){return t[0]===h;}); state.tab=ok?h:"summary"; state.q=""; state.f="all"; render(); window.scrollTo(0,0); }
+var sel=document.getElementById("day");
+sel.innerHTML=DAYS.slice().reverse().map(function(d){return '<option value="'+d+'">'+fd(d)+'</option>';}).join("");
+sel.value=state.day;
+sel.addEventListener("change",function(){ state.day=sel.value; state.f="all"; state.doneDay=null; render(); });
+function go(tab){ state.tab=tab; state.q=""; state.f="all"; render(); try{ window.scrollTo(0,0); }catch(e){} }
+document.addEventListener("click",function(ev){
+  var a=ev.target&&ev.target.closest?ev.target.closest('a[href^="#"]'):null; if(!a) return;
+  var h=a.getAttribute("href").slice(1);
+  if(!TABS.some(function(t){return t[0]===h;})) return;
+  ev.preventDefault(); go(h);
+  try{ history.replaceState(null,"","#"+h); }catch(e){ try{ location.hash=h; }catch(e2){} }
+});
+window.addEventListener("hashchange",function(){ var h=(location.hash||"").replace("#",""); if(h!==state.tab&&TABS.some(function(t){return t[0]===h;})) go(h); });
+route();
+})();
+</script>
+</body>
+</html>
